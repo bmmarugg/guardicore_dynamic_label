@@ -1,6 +1,8 @@
 Guardicore Centra API - Label with dynamic criteria script
-v1.0 | 2023-07-07
+v2.0 | 2023-09-29
+
 See 'changelog.txt' for full version history notes
+For more useful Python scripts, visit my github @ https://github.com/bmmarugg/
 
 === How to use ===
 1. Open the 'sample_creds.json' file and fill in your own API-privileged username and password combination.
@@ -23,3 +25,6 @@ See 'changelog.txt' for full version history notes
 8. Run the python file. For windows, this will be "python <python_file>.py".
    For MacOS/Linux, it will be ""./<python_file>.py". Don't forget to change the privileges on the python file to allow
    it to run.
+
+9. When the script runs, you (the user) will be prompted to choose which type of dynamic criteria you need to
+   add/update. Just type "host" or "ip" (capitalization doesn't matter) and it will figure out the rest.
