@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# v1.0 | 2023-07-07
+# v2.0 | 2023-09-29
 
 import json
 import requests
@@ -7,24 +7,19 @@ import urllib3
 from pprint import pprint
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-# Base variables for important things. Helps make the script a little shorter.
-base_doc_path = "/PATH/TO/FILE/DIRECTORY"
-base_centra_url = "https://YOUR/URL/HERE/api/"
+base_doc_path = "PATH/TO/docs"
+base_centra_url = "https://<YOUR-URL-HERE>/api/v4.0"
 
 
-# JSON credential file path where your API username and password are stored.
+# JSON credential file path where your API token is stored.
 with open(f"{base_doc_path}/creds.json") as creds:
     creds = json.load(creds)
 
 username = creds['guardicore_user']
 passwd = creds['guardicore_pass']
 
-
-# Function that uses the API-privileged username and password to authenticate to Centra and pull a token that will be
-# used for API calls.
 def get_token():
-    auth_url = f"https://{base_centra_url}/v3.0"
+    auth_url = "https://<YOUR-URL-HERE>/api/v3.0"
 
     headers = {
         "content-type": "application/json"
@@ -42,46 +37,75 @@ def get_token():
 token = get_token()
 
 
-# The function that actually creates the label and assigns the dynamic criteria values.
-def create_dyn_label(token):
-    # New headers that includes the token obtained from the previous function
+def subnet_dyn_label():
     headers = {
         "content-type": "application/json",
         "Authorization": f"bearer {token}"
     }
 
-    # The file with the dynamic criteria VALUES to be added to the label.
     dyn_criteria_file = open(f"{base_doc_path}/dyn_criteria.txt", "r")
 
-    # Lets the user put in their own key:value pair names each time the script is ran.
     label_key = input("Label Key: ")
     label_value = input("Label Value: ")
 
-    # Iterates through the dyn_criteria.txt file and builds the data payload as a list that will be attached in the next
-    # step.
     dyn_list = []
-    for address in dyn_criteria_file:
-        address = address.replace(" ", "")
-        address = address.replace("\n", "")
+    for criteria in dyn_criteria_file:
+        criteria = criteria.replace(" ", "")
+        criteria = criteria.replace("\n", "")
         dyn_dict = {
             "field": "numeric_ip_addresses",
             "op": "SUBNET",
-            "argument": f"{address}"
+            "argument": f"{criteria}"
         }
 
         dyn_list.append(dyn_dict)
 
-    # The next data payload that creates the label using the user-defined key:value pair and attaches the list of
-    # dynamic criteria built above as the dynamic criteria.
     dyn_label = {
         "key": f"{label_key}",
         "value": f"{label_value}",
         "criteria": dyn_list
     }
 
-    # The actual API call that sends the full data payload. It will print an ID code upon a successful POST call.
-    pprint(requests.post(f"{base_centra_url}/v4.0/labels",
-                         verify=False, headers=headers, data=json.dumps(dyn_label)).json())
+
+    pprint(requests.post(f"{base_centra_url}/labels", verify=False, headers=headers, data=json.dumps(dyn_label)).json())
 
 
-create_dyn_label(token)
+def host_dyn_label():
+    headers = {
+        "content-type": "application/json",
+        "Authorization": f"bearer {token}"
+    }
+
+    dyn_criteria_file = open(f"{base_doc_path}/dyn_criteria.txt", "r")
+
+    label_key = input("Label Key: ")
+    label_value = input("Label Value: ")
+
+    dyn_list = []
+    for criteria in dyn_criteria_file:
+        criteria = criteria.replace(" ", "")
+        criteria = criteria.replace("\n", "")
+        dyn_dict = {
+            "field": "name",
+            "op": "STARTSWITH",
+            "argument": f"{criteria}"
+        }
+
+        dyn_list.append(dyn_dict)
+
+    dyn_label = {
+        "key": f"{label_key}",
+        "value": f"{label_value}",
+        "criteria": dyn_list
+    }
+
+
+    pprint(requests.post(f"{base_centra_url}/labels", verify=False, headers=headers, data=json.dumps(dyn_label)).json())
+
+choice = input("Host or IP? \n")
+
+if "ip" in choice.lower():
+    subnet_dyn_label()
+
+elif "host" in choice.lower():
+    host_dyn_label()

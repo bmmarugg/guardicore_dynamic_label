@@ -1,2 +1,6 @@
 === v1.0 ===
     - Initial publish for redistribution
+
+=== v2.0 ===
+    - Added new function to handle IP addresses/subnets as dynamically criteria
+    - Added function for user to choose which function to run (hostname or IP address)
